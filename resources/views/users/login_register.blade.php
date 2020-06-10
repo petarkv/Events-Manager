@@ -12,7 +12,10 @@
     <link href="{{ asset('css/frontend_css/price-range.css') }}" rel="stylesheet">
     <link href="{{ asset('css/frontend_css/animate.css') }}" rel="stylesheet">
 	<link href="{{ asset('css/frontend_css/main.css') }}" rel="stylesheet">
-    <link href="{{ asset('css/frontend_css/responsive.css') }}" rel="stylesheet">
+	<link href="{{ asset('css/frontend_css/responsive.css') }}" rel="stylesheet">
+	
+	<!-- Password Strength -->
+    <link href="{{ asset('css/frontend_css/passtrength.css') }}" rel="stylesheet">
     
     <!-- Awesome Icons 4.7.0 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
@@ -45,11 +48,11 @@
 					<div class="col-sm-6">
 						<div class="social-icons pull-right">
 							<ul class="nav navbar-nav">
-								<li><a href=""><i class="fa fa-facebook" title="facebook"></i></a></li>
-								<li><a href=""><i class="fa fa-twitter" title="twitter"></i></a></li>
-								<li><a href=""><i class="fa fa-linkedin" title="linkedin"></i></a></li>
-								<li><a href=""><i class="fa fa-instagram" title="instagram"></i></a></li>
-								<li><a href=""><i class="fa fa-youtube" title="youtube"></i></a></li>
+								<li><a href=""><i class="fa fa-facebook" title="Facebook"></i></a></li>
+								<li><a href=""><i class="fa fa-twitter" title="Twitter"></i></a></li>
+								<li><a href=""><i class="fa fa-linkedin" title="Linkedin"></i></a></li>
+								<li><a href=""><i class="fa fa-instagram" title="Instagram"></i></a></li>
+								<li><a href=""><i class="fa fa-youtube" title="YouTube"></i></a></li>
 							</ul>
 						</div>
 					</div>
@@ -78,7 +81,7 @@
             <div class="row">
     
         @if (Session::has('flash_message_error'))                
-          <div class="alert alert-error alert-block">
+          <div class="alert alert-error alert-block" style="background-color: #f2dfd0;">
             <button type="button" class="close" data-dismiss="alert">×</button>                
             <strong>{!! session('flash_message_error') !!}</strong>                
           </div>
@@ -297,6 +300,9 @@
 	<script src="{{ asset('js/frontend_js/main.js') }}"></script>
 	
 	<!-- Login / Register Users -->
-    <script src="{{ asset('js/frontend_js/jquery.validate.js') }}"></script>
+	<script src="{{ asset('js/frontend_js/jquery.validate.js') }}"></script>
+	
+	<!-- Password Strength -->
+    <script src="{{ asset('js/frontend_js/passtrength.js') }}"></script>
 </body>
 </html>

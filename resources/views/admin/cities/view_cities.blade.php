@@ -4,8 +4,8 @@
 <div id="content">
     <div id="content-header">
         <div id="breadcrumb"> <a href="{{ url("/admin/dashboard") }}" title="Go to Home" class="tip-bottom">
-            <i class="icon-home"></i> Home</a> <a href="#">Cities</a> 
-            <a href="#" class="current">View Cities</a> </div>
+            <i class="icon-home"></i> Home</a> <a href="">Cities</a> 
+            <a href="" class="current">View Cities</a> </div>
       <h1>Cities</h1>
 
     @if (Session::has('flash_message_error'))                

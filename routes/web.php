@@ -139,11 +139,8 @@ Route::get('user-logout', 'UsersController@logout');
 Route::match(['get','post'],'/check-email','UsersController@checkEmail');
 Route::match(['get','post'],'/check-username','UsersController@checkUsername');
 
-Route::group(['middleware'=>['frontlogin']],function(){
-    
-});
 
-
+Route::group(['middleware'=>['frontlogin']],function(){    
 #HOME PAGE
 Route::get('/','IndexController@index');
 
@@ -168,7 +165,19 @@ Route::get('/cart/delete-ticket/{id}','EventController@deleteCartTicket');
 #UPDATE TICKET QUANTITY IN CART
 Route::get('/cart/update-quantity/{id}/{quantity}','EventController@updateCartQuantity');
 
+#USER ACCOUNT PAGE
+Route::match(['get','post'],'/account','UsersController@account');
+
+#CHECK USER CURRENT PASSWORD
+Route::post('/check-user-password','UsersController@checkUserPassword');
+
+//UPDATE USER PASSWORD
+Route::post('/update-user-password','UsersController@updateUserPassword');
+
+});
+
 # --------------------------------------------------------------------------------------------------
+
 Auth::routes();
 
 Route::get('/home', 'HomeController@index')->name('home');
