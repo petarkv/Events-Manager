@@ -95,7 +95,8 @@ class AdminController extends Controller
 
             User::where(['id'=>$id])->update(['user_category'=>$data['user_category']]);
         }
-        return \redirect('/admin/view-users')->with('flash_message_success','Member '.$userDetails->first_name.' '.$userDetails->last_name.' has been updated member category '.$data['user_category'].'!');
+        return \redirect('/admin/view-users')->with('flash_message_success','Member '.$userDetails->first_name.' '.$userDetails->last_name.
+                            ' has been updated member category '.$data['user_category'].'!');
     }
      
 }

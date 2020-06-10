@@ -5,8 +5,12 @@
       <li <?php if (preg_match("/dash/i", $url)) { ?> class="active" <?php } ?>>
         <a href="{{ url('/admin/dashboard') }}"><i class="icon icon-home"></i> <span>Dashboard</span></a> </li>
 
-      <li <?php if (preg_match("/events-calendar/i", $url)) { ?> class="active" <?php } ?>>
-        <a href="{{ url('/admin/events-calendar') }}"> <i class="icon-calendar"></i>Events Calendar</a> </li>
+      <li class="submenu"> <a href="#"><i class="icon icon-th-list"></i> <span>Calendar</span> <span class="label label-important">1</span></a>
+        <ul <?php if (preg_match("/calendar/i", $url)) { ?> style="display: block;" <?php } ?>>            
+          <li <?php if (preg_match("/events-calendar/i", $url)) { ?> class="active" <?php } ?>>
+            <a href="{{ url('/admin/events-calendar') }}">Events Calendar</a></li>          
+        </ul>
+      </li>  
     
       <li class="submenu"> <a href="#"><i class="icon icon-th-list"></i> <span>Events</span> <span class="label label-important">2</span></a>
         <ul <?php if (preg_match("/event/i", $url)) { ?> style="display: block;" <?php } ?>>
@@ -52,8 +56,11 @@
             <a href="{{ url('/admin/view-banners') }}">View Banners</a></li>          
         </ul>
 
-      <li <?php if (preg_match("/view-users/i", $url)) { ?> class="active" <?php } ?>>
-        <a href="{{ url('/admin/view-users') }}"> <i class="icon-user"></i>Members</a> </li>
+        <li class="submenu"> <a href="#"><i class="icon icon-th-list"></i> <span>Members</span> <span class="label label-important">1</span></a>
+          <ul <?php if (preg_match("/user/i", $url)) { ?> style="display: block;" <?php } ?>>            
+            <li <?php if (preg_match("/view-users/i", $url)) { ?> class="active" <?php } ?>>
+              <a href="{{ url('/admin/view-users') }}">View Members</a></li>          
+          </ul>
 
     </ul>
   </div>
