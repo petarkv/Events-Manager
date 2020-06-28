@@ -105,6 +105,7 @@ class UsersController extends Controller
     public function logout(){
         Auth::logout();
         Session::forget('frontSession');  //Prevent Routes with Middleware
+        Session::forget('session_id');
         return \redirect('/login-register');
     }
     
