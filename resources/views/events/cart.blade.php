@@ -5,7 +5,7 @@
     <div class="container">
         <div class="breadcrumbs">
             <ol class="breadcrumb">
-              <li><a href="#">Home</a></li>
+              <li><a href="{{ url('/') }}">Home</a></li>
               <li class="active">Shopping Cart</li>
             </ol>
         </div>
@@ -41,13 +41,14 @@
                     @foreach ($userCart as $cart)
                     <tr>
                         <td class="cart_product">
-                            <a href=""><img style="width: 100px !important;" src="{{ asset('images/backend_images/events/small/'.$cart->image) }}" alt=""></a>
+                            <a href=""><img style="width: 130px;" src="{{ asset('images/backend_images/events/small/'.$cart->image) }}" 
+                                alt=""></a>
                         </td>
-                        <td class="cart_description">
-                            <h4><a href="">{{ $cart->title }}</a></h4>
-                            <p>Location: {{ $cart->place_name }}</p>
-                            <p>Ticket Code: {{ $cart->ticket_code }}</p>
-                            <p>Ticket Type: {{ $cart->ticket_type }}</p>
+                        <td class="cart_description">                            
+                            <h4><a href=""><strong>{{ $cart->title }}</strong></a></h4><br>
+                            <p><strong>Location:</strong> {{ $cart->name }} / {{ $cart->place_name }}</p>
+                            <p><strong>Ticket Code:</strong> {{ $cart->ticket_code }}</p>
+                            <p><strong>Ticket Type:</strong> {{ $cart->ticket_type }}</p>
                         </td>
                         <td class="cart_price">
                             <p>EUR {{ $cart->price }}</p>
@@ -55,7 +56,8 @@
                         <td class="cart_quantity">
                             <div class="cart_quantity_button">
                                 <a class="cart_quantity_up" href="{{ url('/cart/update-quantity/'.$cart->id.'/1') }}"> + </a>
-                                <input class="cart_quantity_input" type="text" name="quantity" value="{{ $cart->quantity }}" autocomplete="off" size="2">
+                                <input class="cart_quantity_input" type="text" name="quantity" value="{{ $cart->quantity }}" 
+                                        autocomplete="off" size="2">
                                 @if ($cart->quantity>1)
                                     <a class="cart_quantity_down" href="{{ url('/cart/update-quantity/'.$cart->id.'/-1') }}"> - </a>
                                 @endif
@@ -66,7 +68,8 @@
                             <p class="cart_total_price">EUR {{ $cart->price*$cart->quantity }}</p>
                         </td>
                         <td class="cart_delete">
-                            <a class="cart_quantity_delete" href="{{ url('/cart/delete-ticket/'.$cart->id) }}"><i class="fa fa-times"></i></a>
+                            <a class="cart_quantity_delete" href="{{ url('/cart/delete-ticket/'.$cart->id) }}" style="border: solid 1px black;">
+                                <i class="fa fa-times"></i></a>
                         </td>
                     </tr> 
                     <?php $total_amount = $total_amount + ($cart->price*$cart->quantity); ?>
@@ -105,12 +108,16 @@
                     <ul> 
                         <li>Total <span>EUR <?php echo $total_amount; ?></span></li>                       
                     </ul>
-                        <a class="btn btn-default update" href="">Update</a>
-                        <a class="btn btn-default check_out" href="">Check Out</a>
+                        <a class="btn btn-default update" href="{{ url('/') }}">Update</a>
+                        <a class="btn btn-default check_out" href="{{ url('/checkout') }}">Check Out</a>
                 </div>
             </div>
         </div>
     </div>
 </section><!--/#do_action-->
 
+@endsection
+
+@section('title')
+    Cart
 @endsection

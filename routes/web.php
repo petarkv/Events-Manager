@@ -140,6 +140,7 @@ Route::match(['get','post'],'/check-email','UsersController@checkEmail');
 Route::match(['get','post'],'/check-username','UsersController@checkUsername');
 
 
+
 Route::group(['middleware'=>['frontlogin']],function(){    
 #HOME PAGE
 Route::get('/','IndexController@index');
@@ -171,10 +172,46 @@ Route::match(['get','post'],'/account','UsersController@account');
 #CHECK USER CURRENT PASSWORD
 Route::post('/check-user-password','UsersController@checkUserPassword');
 
-//UPDATE USER PASSWORD
+#UPDATE USER PASSWORD
 Route::post('/update-user-password','UsersController@updateUserPassword');
 
+#CHECKOUT PAGE
+Route::match(['get','post'],'/checkout','EventController@checkout');
+
+#ORDER REVIEW PAGE
+Route::match(['get','post'],'/order-review','EventController@orderReview');
+
+#PLACE ORDER
+Route::match(['get','post'],'/place-order','EventController@placeOrder');
+
+#THANKS PAGE - COD PAYMENT
+Route::get('/thanks','EventController@thanks');
+
+#USER TICKETS ORDERS PAGE
+Route::get('/tickets-orders','EventController@userTicketsOrders');
+
+#USER ORDERED TICKETS DETAILS PAGE
+Route::get('/tickets-orders/{id}','EventController@userTicketOrderDetails');
+
+#PAYPAL PAGE
+Route::get('/paypal','EventController@paypal');
+
+#PAYPAL THANKS PAGE
+Route::get('/paypal/thanks','EventController@paypalThanks');
+
+#PAYPAL CANCEL PAGE
+Route::get('/paypal/cancel','EventController@paypalCancel');
+
+# CONTACT US PAGE
+Route::match(['get','post'],'/page/contact','CmsController@contact');
+
 });
+
+
+
+# HELP WITH REGISTRATION OR LOGIN PAGE
+Route::match(['get','post'],'/page/help','CmsController@help');
+
 
 # --------------------------------------------------------------------------------------------------
 

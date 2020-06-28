@@ -13,6 +13,8 @@ class IndexController extends Controller
     public function index(){
         //Get All Events with Pagination
         $eventsAll = Event::orderBy('event_id','DESC')->paginate(6);
+        //echo "<pre>"; print_r($eventsAll); die;
+        //\dump($eventsAll);
 
         //Get All Categories
         $categories = Category::get();

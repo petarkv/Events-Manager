@@ -14,6 +14,11 @@ use App\City;
 use App\EventsImage;
 use App\Ticket;
 use App\Banner;
+use App\User;
+use App\Country;
+use App\DeliveryAddress;
+use App\Order;
+use App\OrdersTicket;
 
 class EventController extends Controller
 {
@@ -491,11 +496,17 @@ class EventController extends Controller
 
     public function addtocart(Request $request){
         $data = $request->all();
-        //echo "<pre>"; print_r($data); die;
+        //echo "<pre>"; print_r($data); die;        
 
-        if (empty($data['user_email'])) {
+        if (empty(Auth::user()->email)) {
             $data['user_email'] = '';
+        }else{
+            $data['user_email'] = Auth::user()->email;
         }
+
+        /*if (empty($data['user_email'])) {
+            $data['user_email'] = '';
+        }*/
 
         /*if (empty($data['session_id'])) {
             $data['session_id'] = '';
@@ -512,6 +523,15 @@ class EventController extends Controller
         if(empty($typeArr[1])){
             return \redirect()->back()->with('flash_message_error','You need to select ticket type first!');
         }else{
+
+        // Check Product Stock is available or not        
+        $getTicketStock = Ticket::where(['event_id'=>$data['event_id'],
+                            'ticket_type'=>$typeArr[1]])->first();
+        //echo $getProductStock->stock; die;
+        if ($getTicketStock->stock < $data['quantity']) {
+            return \redirect()->back()->with('flash_message_error','Required Quantity is not available!');
+        }
+
         $countTickets = DB::table('cart')->where(['event_id'=>$data['event_id'],                                   
                                                 'ticket_code'=>$typeArr[2],                    
                                                 'ticket_type'=>$typeArr[1],                                                    
@@ -523,28 +543,38 @@ class EventController extends Controller
         }else{
 
             $getTicketCode = Ticket::select('ticket_code')->where(['event_id'=>$data['event_id'],'ticket_type'=>$typeArr[1]])->first();
-            
+        }
             DB::table('cart')->insert(['event_id'=>$data['event_id'],
                                     'title'=>$data['title'],
                                     'ticket_code'=>$getTicketCode->ticket_code,
                                     'place_name'=>$data['place_name'],
+                                    'city'=>$data['event_city'],
                                     'price'=>$data['price'],
                                     'ticket_type'=>$typeArr[1],
                                     'quantity'=>$data['quantity'],
                                     'user_email'=>$data['user_email'],
                                     'session_id'=>$session_id]);
         } 
-    }       
- 
+    
         return \redirect('cart')->with('flash_message_success','Ticket has been added in Cart!'); 
+        
     }
 
-    public function cart(){
-        $session_id = Session::get('session_id'); 
-        $userCart = DB::table('cart')->where(['session_id'=>$session_id])->get();
+    public function cart(){  
+
+        if(Auth::check()){
+            $user_email = Auth::user()->email;
+            $userCart = DB::table('cart')->where(['user_email'=>$user_email])->get();
+        }else{
+            $session_id = Session::get('session_id');
+            $userCart = DB::table('cart')->where(['session_id'=>$session_id])->get();
+        } 
+        
         foreach ($userCart as $key => $event) {
             $eventDetails = Event::where('event_id',$event->event_id)->first();
             $userCart[$key]->image = $eventDetails->image;
+            $cityDetails = City::where('city_id',$eventDetails->city_id)->first();
+            $userCart[$key]->name = $cityDetails->name;
         }
         //echo "<pre>"; print_r($userCart); die;
         return \view('events.cart')->with(\compact('userCart'));
@@ -573,6 +603,241 @@ class EventController extends Controller
 
         
     }
+
+    public function checkout(Request $request){
+        $user_id = Auth::user()->id;
+        $user_email = Auth::user()->email;
+        $userDetails = User::find($user_id);
+        $countries = Country::get();
+
+        // Check if Shipping Address exists
+        $shippingCount = DeliveryAddress::where('user_id',$user_id)->count();
+        $shippingDetails = array();
+        if ($shippingCount>0) {
+            $shippingDetails = DeliveryAddress::where('user_id',$user_id)->first();
+        }
+
+        // Update cart table with user email
+        $session_id = Session::get('session_id');
+        DB::table('cart')->where(['session_id'=>$session_id])->update(['user_email'=>$user_email]);
+
+        if($request->isMethod('post')){
+            $data = $request->all();
+            //echo "<pre>"; print_r($data); die;
+        
+            //Return to Checkout Page if any of the field is empty
+            if (empty($data['billing_name']) ||
+                empty($data['billing_surname']) ||
+                empty($data['billing_address']) ||
+                empty($data['billing_city']) ||                
+                empty($data['billing_country']) ||
+                empty($data['billing_postalcode']) ||
+                empty($data['billing_mobile']) ||
+                empty($data['shipping_name']) ||
+                empty($data['shipping_surname']) ||
+                empty($data['shipping_address']) ||
+                empty($data['shipping_city']) ||                
+                empty($data['shipping_country']) ||
+                empty($data['shipping_postalcode']) ||
+                empty($data['shipping_mobile'])) {
+                return \redirect()->back()->with('flash_message_error','Please fill all fields to Checkout.');
+            }
+
+            // Update User Details
+            User::where('id',$user_id)->update(['first_name'=>$data['billing_name'],
+                                                'last_name'=>$data['billing_surname'],
+                                                'address'=>$data['billing_address'],
+                                                'city'=>$data['billing_city'],                                                
+                                                'country'=>$data['billing_country'],
+                                                'postal_code'=>$data['billing_postalcode'],
+                                                'mobile'=>$data['billing_mobile']]);  
+            if ($shippingCount>0){
+                // Update Shipping Address
+                DeliveryAddress::where('user_id',$user_id)->update(['first_name'=>$data['shipping_name'],
+                                                                    'last_name'=>$data['shipping_surname'],
+                                                                    'address'=>$data['shipping_address'],
+                                                                    'city'=>$data['shipping_city'],                                                                    
+                                                                    'country'=>$data['shipping_country'],
+                                                                    'postal_code'=>$data['shipping_postalcode'],
+                                                                    'mobile'=>$data['shipping_mobile']]);
+            }else{
+                // Add New Shipping Address
+                $shipping = new DeliveryAddress;
+                $shipping->user_id = $user_id;
+                $shipping->user_email = $user_email;
+                $shipping->first_name = $data['shipping_name'];
+                $shipping->last_name = $data['shipping_surname'];
+                $shipping->address = $data['shipping_address'];
+                $shipping->city = $data['shipping_city'];                
+                $shipping->country = $data['shipping_country'];
+                $shipping->postal_code = $data['shipping_postalcode'];
+                $shipping->mobile = $data['shipping_mobile'];
+                $shipping->save();
+            }                                
+            return \redirect()->action('EventController@orderReview');
+        }
+
+        return \view('events.checkout')->with(\compact('userDetails','countries','shippingDetails'));
+        //return \view('events.checkout')->with(\compact('userDetails','countries'));
+    }
+
+    public function orderReview(){
+        $user_id = Auth::user()->id;
+        $user_email = Auth::user()->email;
+        $userDetails = User::where('id',$user_id)->first();
+        $shippingDetails = DeliveryAddress::where('user_id',$user_id)->first();
+        $shippingDetails = \json_decode(\json_encode($shippingDetails));
+        //echo "<pre>"; print_r($shippingDetails); die;
+        $userCart = DB::table('cart')->where(['user_email'=>$user_email])->get();
+        foreach ($userCart as $key => $event) {
+            $eventDetails = Event::where('event_id',$event->event_id)->first();
+            $userCart[$key]->image = $eventDetails->image;
+            $cityDetails = City::where('city_id',$eventDetails->city_id)->first();
+            $userCart[$key]->name = $cityDetails->name;
+        }
+        //echo "<pre>"; print_r($userCart); die;       
+        return \view('events.order_review')->with(\compact('userDetails','shippingDetails','userCart'));
+    }
+
+    public function placeOrder(Request $request){     
+        if($request->isMethod('post')){
+            $data = $request->all();            
+            $user_id = Auth::user()->id;
+            $user_email = Auth::user()->email;
+            //echo "<pre>"; print_r($data); die;
+
+             // Get Shipping Address of User
+             $shippingDetails = DeliveryAddress::where(['user_email' => $user_email])->first();
+             //$shippingDetails = \json_decode(json_encode($shippingDetails));
+             //echo "<pre>"; print_r($shippingDetails); die;             
+
+        //     $postalcodeCount = DB::table('postal_codes')->where('postal_code',$shippingDetails->pincode)->count();
+        //     if ($postalcodeCount == 0) {
+        //         return \redirect()->back()->with('flash_message_error','Your location is not available for delivery.
+        //                     Please enter another location.');
+        //     }
+
+        //     //echo "<pre>"; print_r($data); die;
+            //  if(empty(Session::get('couponCode'))){
+            //      $coupon_code = '';
+            //  }else{
+            //      $coupon_code = Session::get('couponCode');                
+            //  }
+
+            //  if(empty(Session::get('couponAmount'))){
+            //      $coupon_amount = '';
+            //  }else{
+            //      $coupon_amount = Session::get('couponAmount');
+            //  }
+            
+             $order = new Order;
+             $order->user_id = $user_id;
+             $order->user_email = $user_email;
+             $order->first_name = $shippingDetails->first_name;
+             $order->last_name = $shippingDetails->last_name;
+             $order->address = $shippingDetails->address;
+             $order->city = $shippingDetails->city;        
+             $order->postal_code = $shippingDetails->postal_code;
+             $order->country = $shippingDetails->country;
+             $order->mobile = $shippingDetails->mobile;
+             //$order->coupon_code = $coupon_code;
+             //$order->coupon_amount = $coupon_amount;
+             $order->order_status = "New";
+             $order->payment_method = $data['payment_method'];
+             $order->grand_total = $data['grand_total'];
+             $order->save();
+
+             $order_id = DB::getPdo()->lastInsertId();
+
+             $cartItems = DB::table('cart')->where(['user_email'=>$user_email])->get();
+             foreach ($cartItems as $item) {
+                 $cartTicket = new OrdersTicket;
+                 $cartTicket->order_id = $order_id;
+                 $cartTicket->user_id = $user_id;
+                 $cartTicket->event_id = $item->event_id;
+                 $cartTicket->ticket_code = $item->ticket_code;
+                 $cartTicket->event_name = $item->title;
+                 $cartTicket->event_location = $item->place_name;
+                 $cartTicket->event_city = $item->city;
+                 $cartTicket->ticket_type = $item->ticket_type;        
+                 $cartTicket->ticket_price = $item->price;
+                 $cartTicket->ticket_quantity = $item->quantity;
+                 $cartTicket->save();
+             }
+             Session::put('order_id',$order_id);
+             Session::put('grand_total',$data['grand_total']);
+            // Session::put('payment_method',$data['payment_method']);
+
+             if($data['payment_method']=="COD"){
+
+        //         $productDetails = Order::with('orders')->where('id',$order_id)->first();
+        //         $productDetails = \json_decode(\json_encode($productDetails),true);
+        //         //echo "<pre>"; print_r($productDetails); die;
+
+        //         $userDetails = User::where('id',$user_id)->first();
+        //         $userDetails = \json_decode(\json_encode($userDetails),true);
+        //         //echo "<pre>"; print_r($userDetails); die;
+
+        //         /* Code for Order Email Start */
+        //         $email = $user_email;
+        //         $messageData = [
+        //             'email'=>$email,
+        //             'name'=>$shippingDetails->name,
+        //             'surname'=>$shippingDetails->surname,
+        //             'order_id' => $order_id,
+        //             'productDetails' => $productDetails,
+        //             'userDetails' => $userDetails
+        //         ];
+        //         Mail::send('emails.order',$messageData,function($message) use($email){
+        //             $message->to($email)->subject('Order Placed - MyShop');
+        //             $message->from('mile.javakv@gmail.com','MyShop');
+        //         });
+        //         /* Code for Order Email End */
+
+                 return \redirect('/thanks');
+             }else{
+                 return \redirect('/paypal');
+             }
+            
+         }
+    }
+
+    public function thanks(Request $request){        
+        $user_email = Auth::user()->email;
+        DB::table('cart')->where('user_email',$user_email)->delete();
+        return \view('orders.thanks');
+    }
+
+    public function paypal(Request $request){        
+        $user_email = Auth::user()->email;
+        DB::table('cart')->where('user_email',$user_email)->delete();
+        return \view('orders.paypal');
+    }
+
+    public function paypalThanks(Request $request){
+        return \view('orders.paypal_thanks');
+    }
+
+    public function paypalCancel(Request $request){
+        return \view('orders.paypal_cancel');
+    }
+
+    public function userTicketsOrders(){
+        $user_id = Auth::user()->id;
+        $orders = Order::with('orders')->where('user_id',$user_id)->orderBy('id','DESC')->get();
+        //$orders = \json_decode(\json_encode($orders));
+        //echo "<pre>"; print_r($orders); die;
+        return \view('orders.user_tickets_orders')->with(\compact('orders'));
+    }
+
+    public function userTicketOrderDetails($order_id){
+        $user_id = Auth::user()->id;
+        $orderDetails = Order::with('orders')->where('id',$order_id)->first();
+        $orderDetails = \json_decode(\json_encode($orderDetails));
+        //echo "<pre>"; print_r($orderDetails); die;
+        return \view('orders.user_ticket_order_details')->with(compact('orderDetails'));
+    }
+
 
 } 
 

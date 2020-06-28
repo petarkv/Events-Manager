@@ -59,9 +59,9 @@
                 <div class="col-sm-8">
                     <div class="shop-menu pull-right">
                         <ul class="nav navbar-nav">                            
-                            <li><a href="#"><i class="fa fa-star"></i> Wishlist</a></li>
-                            <li><a href="#"><i class="fa fa-crosshairs"></i> Ticket Orders</a></li>
-                            <li><a href="#"><i class="fa fa-shopping-cart"></i> Cart</a></li>
+                            <li><a href=""><i class="fa fa-star"></i> Wishlist</a></li>
+                            <li><a href="{{ url('/tickets-orders') }}"><i class="fa fa-crosshairs"></i> Ticket Orders</a></li>
+                            <li><a href="{{ url('/cart') }}"><i class="fa fa-shopping-cart"></i> Cart</a></li>
                             @if (empty(Auth::check()))
                                 <li><a href="{{ url('/login-register') }}"><i class="fa fa-lock"></i>Login</a></li> 
                             @else
@@ -107,7 +107,7 @@
                                 </ul>
                             </li--> 
                             <!--li><a href="404.html">404</a></li-->
-                            <li><a href="/">Contact</a></li>
+                            <li><a href="{{ url('/page/contact') }}">Contact</a></li>
                         </ul>
                     </div>
                 </div>

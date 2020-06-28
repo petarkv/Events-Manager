@@ -54,7 +54,7 @@
                             {{ csrf_field() }}
                             <input type="hidden" name="event_id" value="{{ $eventDetails->event_id }}">
                             <input type="hidden" name="title" value="{{ $eventDetails->title }}">
-                            
+                            <input type="hidden" name="event_city" value="{{ $eventDetails->city_name }}">
                             <input type="hidden" name="place_name" value="{{ $eventDetails->place_name }}">
                             <input type="hidden" name="price" id="price" value="{{ $eventDetails->ticket_price }}">
                         <div class="product-information"><!--/product-information-->                            
@@ -202,4 +202,8 @@
     </div>
 </section>
 
+@endsection
+
+@section('title')
+    {{ $eventDetails->title }} 
 @endsection
